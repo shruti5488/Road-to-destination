@@ -2,8 +2,10 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -12,37 +14,38 @@ import java.util.Stack;
 
 public class AISearch {
 
-	private static HashMap<String, List<String>> graph = new HashMap<String, List<String>>();
+	private HashMap<String, List<String>> graph = new HashMap<String, List<String>>();
+	List<Maintain_Weight> scores = new ArrayList<Maintain_Weight>();
 
+	
 	public void setGraph(HashMap<String, List<String>> graph) {
 		this.graph = graph;
 	}
 
-	public static HashMap<String, List<String>> getGraph() {
+	public HashMap<String, List<String>> getGraph() {
 		return graph;
 	}
 
-	public static void addEdge(String node, String path) {
-		int index = 0;
-
+	public void addEdge(String node, String path) {
 		LinkedList<String> list_path = new LinkedList<String>();
-		if (graph.containsKey(node)) {
-			index = Collections.frequency(graph.values(), node);
-			list_path.addAll(graph.get(node));
+		if (getGraph().containsKey(node)) {
+			list_path.addAll(getGraph().get(node));
 			list_path.add(path);
-			graph.put(node, list_path);
-			// visited.put(node, false);
+			getGraph().put(node, list_path);
+			setGraph(getGraph());
+
 		} else {
 			list_path.add(path);
-			graph.put(node, list_path);
-			// visited.put(node, false);
+			getGraph().put(node, list_path);
+			setGraph(getGraph());
 		}
 
 	}
 
 	public static ArrayList<String> DFS(String start, String end, HashMap<String, List<String>> DFS_map) {
 		HashMap<String, Boolean> visited = new HashMap<String, Boolean>();
-		Stack<String> stack = new Stack<String>();
+		Deque<String> stack = new ArrayDeque<>();
+		Stack<String> temp_stack = new Stack<String>();
 		ArrayList<String> shortestPathList = new ArrayList<String>();
 		HashMap<String, String> pathStack = new HashMap<String, String>();
 
@@ -54,26 +57,37 @@ public class AISearch {
 			shortestPathList.add(start);
 			return shortestPathList;
 		}
-		String v;
+
+		boolean flag = false;
 		while (!stack.isEmpty()) {
+			vertex = stack.pollFirst();
 			if (vertex.equals(end)) {
 				break;
 			}
 			if (DFS_map.containsKey(vertex)) {
-				Collections.sort(DFS_map.get(vertex), Collections.reverseOrder());
-				for (int i = 0; i < DFS_map.get(vertex).size(); i++) {
-					v = DFS_map.get(vertex).get(i);
+				for (String v : DFS_map.get(vertex)) {
 					if (!visited.containsKey(v)) {
-
+						temp_stack.add(v);
 						visited.put(v, true);
-						stack.push(v);
 						pathStack.put(v, vertex);
-
+						if (end.equals(v)) {
+							flag = true;
+							break;
+						}
+						if (flag == true) {
+							break;
+						}
 					}
+
+				} 
+				for(int i=temp_stack.size()-1;i>=0;i--){
+					stack.addFirst(temp_stack.get(i));
+				}
+				temp_stack.clear();
+				if (flag == true) {
+					break;
 				}
 			}
-
-			vertex = stack.pop();
 		}
 		shortestPathList.add(end);
 		String node = end;
@@ -83,7 +97,6 @@ public class AISearch {
 			current = node;
 			shortestPathList.add(node);
 		}
-
 		return shortestPathList;
 	}
 
@@ -161,18 +174,28 @@ public class AISearch {
 
 		int num_live_traffic = Integer.parseInt(br.readLine());
 		String file_line;
+		int weight;
+		AISearch ai = new AISearch();
+		
 		for (int i = 0; i < num_live_traffic; i++) {
 			file_line = br.readLine().trim();
 			node = file_line.split(" ")[0];
 			path = file_line.split(" ")[1];
-
-			addEdge(node, path);
+			weight = Integer.parseInt(file_line.split(" ")[2]);
+			ai.addEdge(node, path);
+			Maintain_Weight mw = new Maintain_Weight(node+" " + path, weight);	
 		}
 
-		ArrayList<String> DFSPath = DFS(start, end, graph);
-		System.out.println("DFS Traversal: " + DFSPath);
-		ArrayList<String> shortestPathList = BFS(start, end, graph);
-		System.out.println("BFS Traversal: " + shortestPathList);
+		if(algo.equals("DFS")){
+			ArrayList<String> DFSPath = ai.DFS(start, end, ai.getGraph());
+			Collections.reverse(DFSPath);
+			System.out.println("DFS Traversal: " + DFSPath);
+		}else if(algo.equals("BFS")){
+			ArrayList<String> shortestPathList = ai.BFS(start, end, ai.getGraph());
+			Collections.reverse(shortestPathList);
+			System.out.println("BFS Traversal: " + shortestPathList);
+		}
+
 
 	}
 
