@@ -12,7 +12,9 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Stack;
 import java.util.TreeMap;
@@ -32,18 +34,16 @@ public class AISearch {
 		String vertex = start;
 		visited.put(vertex, true);
 		pathStack.add(Arrays.asList(start, start, "0"));
-		int pi = 0;
 
 		while (!stack.isEmpty()) {
 			vertex = stack.pollFirst();
 			if (DFS_map.containsKey(vertex)) {
 
 				for (List<String> v : DFS_map.get(vertex)) {
-					
+
 					temp_stack.add(v.get(0));
 					visited.put(v.get(0), true);
 					pathStack.add(Arrays.asList(v.get(0), vertex, v.get(1).toString() ));
-					pi++;
 					if (end.equals(v.get(0))) {
 						count++;
 					}
@@ -60,7 +60,7 @@ public class AISearch {
 		String hold_path;
 		int index = 0, pathCost = 0;
 		String pathRoute = "", node;
-		
+
 		while(index<count){
 			list_short.add(end);
 			node = end;
@@ -146,7 +146,7 @@ public class AISearch {
 		shortestPathList = getShortestPath(start, end,  pathStack);
 		return shortestPathList;
 	}
-	
+
 
 	public static ArrayList<String> BFS(String start, String end, HashMap<String, List<List<String>>> graph) {
 		ArrayList<String> shortestPathList = new ArrayList<String>();
@@ -178,13 +178,7 @@ public class AISearch {
 							flag = true;
 							break;
 						}
-						if (flag == true) {
-							break;
-						}
 					}
-				}
-				if (flag == true) {
-					break;
 				}
 			}
 		}
@@ -194,6 +188,7 @@ public class AISearch {
 
 	public static ArrayList<String> getShortestPath(String start, String end, HashMap<String, String> pathStack){
 		ArrayList<String> shortestPathList = new ArrayList<String>();
+
 		String node = end;
 		String current = end;
 		shortestPathList.add(end);
@@ -205,7 +200,61 @@ public class AISearch {
 		Collections.reverse(shortestPathList);
 		return shortestPathList;
 	}
-	
+
+	public static List<List<String>> UCS(String start, String end, HashMap<String, List<List<String>>> graph) {
+		List<List<String>> shortestPathList = new ArrayList<List<String>>();
+		String parent = "";
+		MyComparator comparator = new MyComparator();
+		PriorityQueue<Node> pQueue = new PriorityQueue<Node>(13, comparator);
+		ArrayList<List<String>> pathStack = new ArrayList<List<String>>();
+		int count =0, costParent = 0, cost_node;
+
+		pQueue.offer(new Node(start, start, 0));
+
+		if (start.equals(end)){
+			shortestPathList.add(Arrays.asList(start, "0"));
+			return shortestPathList;
+		}
+		String vertex = start;
+
+		while (!pQueue.isEmpty()) {
+			vertex = pQueue.peek().node;
+			parent = pQueue.peek().parent;
+			costParent = pQueue.poll().pathCost;
+
+			pathStack.add(Arrays.asList(vertex, parent, Integer.toString(costParent)));
+
+			if (graph.containsKey(vertex)) {
+				for (List<String> v : graph.get(vertex)) {
+					cost_node = costParent+ Integer.parseInt(v.get(1));
+					pQueue.offer(new Node(v.get(0), vertex, cost_node));
+					if (end.equals(v.get(0))) {
+						count++;
+					}
+
+				} graph.remove(vertex);
+				costParent = 0;
+			}
+		}
+
+		String node = end;
+		int i =0;
+		for(i=0;i<pathStack.size();i++){
+			if(node.equals(start)){
+				shortestPathList.add(Arrays.asList(pathStack.get(i).get(0), pathStack.get(i).get(2)));
+				break;
+			}
+			if (pathStack.get(i).get(0).equals(node)){
+				node = pathStack.get(i).get(1);
+				shortestPathList.add(Arrays.asList(pathStack.get(i).get(0), pathStack.get(i).get(2)));
+				i=-1;
+			} 
+		}
+
+		Collections.reverse(shortestPathList);
+		return shortestPathList;
+	}
+
 	public static void main(String[] args) throws IOException {
 		BufferedReader br = new BufferedReader(
 				new FileReader("/Users/shruti5488/Documents/JAVA/JavaPractice/String1/AISearch/src/testcases_DFS.txt"));
@@ -236,7 +285,9 @@ public class AISearch {
 			System.out.println("BFS Traversal: " + ai.BFS(start, end, graph.getGraph()));
 		}else if(algo.equals("DFS_short")){
 			System.out.println("ShortestPath by DFS traversal: " + ai.ShortestPath_DFS(start, end, graph.getGraph()));
-		} 
+		} else if(algo.equals("UCS")){
+			System.out.println("ShortestPath by UCS traversal: " + ai.UCS(start, end, graph.getGraph()));
+		}
 	}
 
 }

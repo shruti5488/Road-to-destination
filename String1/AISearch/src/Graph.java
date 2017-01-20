@@ -6,7 +6,7 @@ import java.util.List;
 public class Graph {
 	
 	private static HashMap<String, List<List<String>>> graph = new HashMap<String, List<List<String>>>();
-
+	
 	public void setGraph(HashMap<String, List<List<String>>> graph) {
 		this.graph = graph;
 	}
