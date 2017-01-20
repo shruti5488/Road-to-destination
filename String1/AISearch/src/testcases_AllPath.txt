@@ -1,0 +1,17 @@
+DFS
+S
+G
+13
+S B 1
+B H 1
+S C 1
+B F 1
+F I 1
+C J 1
+S D 1
+F G 1
+E K 1
+D G 1
+C E 1
+E G 1
+D L 1

@@ -20,13 +20,20 @@ import java.util.Stack;
 import java.util.TreeMap;
 
 public class AISearch {
+	private static final boolean String = false;
 	public static String ShortestPath_DFS(String start, String end, HashMap<String, List<List<String>>> DFS_map) {
 		HashMap<String, Boolean> visited = new HashMap<String, Boolean>();
 		Deque<String> stack = new ArrayDeque<>();
 		Stack<String> temp_stack = new Stack<String>();
-
 		ArrayList<List<String>> pathStack = new ArrayList<List<String>>();
 		int count =0;
+		ArrayList<String> list_short  = new ArrayList<String>();
+		List<List<String>> shortestPathList = new ArrayList<List<String>>();
+		String hold_path;
+		int index = 0, pathCost = 0;
+		String pathRoute = "", node;
+		
+		
 		stack.push(start);
 		if (start.equals(end)){
 			return start;
@@ -38,9 +45,7 @@ public class AISearch {
 		while (!stack.isEmpty()) {
 			vertex = stack.pollFirst();
 			if (DFS_map.containsKey(vertex)) {
-
 				for (List<String> v : DFS_map.get(vertex)) {
-
 					temp_stack.add(v.get(0));
 					visited.put(v.get(0), true);
 					pathStack.add(Arrays.asList(v.get(0), vertex, v.get(1).toString() ));
@@ -54,12 +59,6 @@ public class AISearch {
 				temp_stack.clear();
 			}
 		}
-
-		ArrayList<String> list_short  = new ArrayList<String>();
-		List<List<String>> shortestPathList = new ArrayList<List<String>>();
-		String hold_path;
-		int index = 0, pathCost = 0;
-		String pathRoute = "", node;
 
 		while(index<count){
 			list_short.add(end);
@@ -101,7 +100,8 @@ public class AISearch {
 		Stack<String> temp_stack = new Stack<String>();
 		ArrayList<String> shortestPathList = new ArrayList<String>();
 		HashMap<String, String> pathStack = new HashMap<String, String>();
-
+		boolean flag = false;
+		
 		stack.push(start);
 		String vertex = start;
 		visited.put(vertex, true);
@@ -111,7 +111,6 @@ public class AISearch {
 			return shortestPathList;
 		}
 
-		boolean flag = false;
 		while (!stack.isEmpty()) {
 			vertex = stack.pollFirst();
 			if (vertex.equals(end)) {
@@ -127,9 +126,6 @@ public class AISearch {
 							flag = true;
 							break;
 						}
-						if (flag == true) {
-							break;
-						}
 					}
 
 				} 
@@ -142,7 +138,6 @@ public class AISearch {
 				}
 			}
 		}
-
 		shortestPathList = getShortestPath(start, end,  pathStack);
 		return shortestPathList;
 	}
@@ -151,23 +146,19 @@ public class AISearch {
 	public static ArrayList<String> BFS(String start, String end, HashMap<String, List<List<String>>> graph) {
 		ArrayList<String> shortestPathList = new ArrayList<String>();
 		HashMap<String, Boolean> visited = new HashMap<String, Boolean>();
-
+		Queue<String> queue = new LinkedList<String>();
+		HashMap<String, String> pathStack = new HashMap<String, String>();
+		Boolean flag = false;
+		
 		if (start.equals(end)) {
 			shortestPathList.add(start);
 			return shortestPathList;
 		}
-
-		Queue<String> queue = new LinkedList<String>();
-		HashMap<String, String> pathStack = new HashMap<String, String>();
-
-		Boolean flag = false;
 		queue.add(start);
 		pathStack.put(start, start);
 		visited.put(start, true);
-
 		while (!queue.isEmpty()) {
 			String next = queue.poll();
-
 			if (graph.containsKey(next)) {
 				for (List<String> v  : graph.get(next)) {
 					if (!visited.containsKey(v.get(0))) {
@@ -188,9 +179,9 @@ public class AISearch {
 
 	public static ArrayList<String> getShortestPath(String start, String end, HashMap<String, String> pathStack){
 		ArrayList<String> shortestPathList = new ArrayList<String>();
-
 		String node = end;
 		String current = end;
+		
 		shortestPathList.add(end);
 		while (node != start) {
 			node = pathStack.get(current);
@@ -201,93 +192,188 @@ public class AISearch {
 		return shortestPathList;
 	}
 
-	public static List<List<String>> UCS(String start, String end, HashMap<String, List<List<String>>> graph) {
-		List<List<String>> shortestPathList = new ArrayList<List<String>>();
+	public static ArrayList<String> UCS(String start, String end, HashMap<String, List<List<String>>> graph) {
+		ArrayList<String> shortestPathList = new ArrayList<String>();
 		String parent = "";
 		MyComparator comparator = new MyComparator();
 		PriorityQueue<Node> pQueue = new PriorityQueue<Node>(13, comparator);
 		ArrayList<List<String>> pathStack = new ArrayList<List<String>>();
-		int count =0, costParent = 0, cost_node;
-
-		pQueue.offer(new Node(start, start, 0));
-
+		int count =0, costParent = 0, cost_node, i =0;
+		String node = end;
+		String vertex = start;
+		
+		pQueue.offer(new Node(start, start, 0, 0));
 		if (start.equals(end)){
-			shortestPathList.add(Arrays.asList(start, "0"));
+			shortestPathList.add(start +" "+ "0");
 			return shortestPathList;
 		}
-		String vertex = start;
 
 		while (!pQueue.isEmpty()) {
 			vertex = pQueue.peek().node;
 			parent = pQueue.peek().parent;
 			costParent = pQueue.poll().pathCost;
-
 			pathStack.add(Arrays.asList(vertex, parent, Integer.toString(costParent)));
-
 			if (graph.containsKey(vertex)) {
 				for (List<String> v : graph.get(vertex)) {
 					cost_node = costParent+ Integer.parseInt(v.get(1));
-					pQueue.offer(new Node(v.get(0), vertex, cost_node));
+					pQueue.offer(new Node(v.get(0), vertex, cost_node, 0));
 					if (end.equals(v.get(0))) {
 						count++;
 					}
+				} graph.remove(vertex);
+				costParent = 0;
+			}
+		}
+		
+		for(i=0;i<pathStack.size();i++){
+			if(node.equals(start)){
+				shortestPathList.add(pathStack.get(i).get(0) +" "+ pathStack.get(i).get(2));
+				break;
+			}
+			if (pathStack.get(i).get(0).equals(node)){
+				node = pathStack.get(i).get(1);
+				shortestPathList.add(pathStack.get(i).get(0) +" "+ pathStack.get(i).get(2));
+				i=-1;
+			} 
+		}
+		Collections.reverse(shortestPathList);
+		return shortestPathList;
+	}
 
+	public static ArrayList<String> AStar(String start, String end, HashMap<String, List<List<String>>> graph, HashMap<String, Integer> live_traffic) {
+		ArrayList<String> shortestPathList = new ArrayList<String>();
+		String parent = "";
+		MyComparator comparator = new MyComparator();
+		PriorityQueue<Node> pQueue = new PriorityQueue<Node>(13, comparator);
+		ArrayList<List<String>> pathStack = new ArrayList<List<String>>();
+		int count =0, costParent = 0, cost_node, heuristic = 0;
+		String vertex = start;
+		String node = end;
+		
+		pQueue.offer(new Node(start, start, live_traffic.get(start), 0));
+		if (start.equals(end)){
+			shortestPathList.add(start + " 0");
+			return shortestPathList;
+		}
+		while (!pQueue.isEmpty()) {
+			vertex = pQueue.peek().node;
+			parent = pQueue.peek().parent;
+			costParent = pQueue.peek().heuristic;
+			heuristic =  pQueue.poll().heuristic;
+			pathStack.add(Arrays.asList(vertex, parent,Integer.toString(heuristic)));
+
+			if (graph.containsKey(vertex)) {
+				for (List<String> v : graph.get(vertex)) {
+					cost_node = costParent+ Integer.parseInt(v.get(1)) + live_traffic.get(v.get(0));
+					pQueue.offer(new Node(v.get(0), vertex,  cost_node, costParent+ Integer.parseInt(v.get(1))));
+					if (end.equals(v.get(0))) {
+						count++;
+					}
 				} graph.remove(vertex);
 				costParent = 0;
 			}
 		}
 
-		String node = end;
-		int i =0;
-		for(i=0;i<pathStack.size();i++){
+		for(int i=0;i<pathStack.size();i++){
 			if(node.equals(start)){
-				shortestPathList.add(Arrays.asList(pathStack.get(i).get(0), pathStack.get(i).get(2)));
+				shortestPathList.add(pathStack.get(i).get(0) +" " + pathStack.get(i).get(2));
 				break;
 			}
 			if (pathStack.get(i).get(0).equals(node)){
 				node = pathStack.get(i).get(1);
-				shortestPathList.add(Arrays.asList(pathStack.get(i).get(0), pathStack.get(i).get(2)));
+				shortestPathList.add(pathStack.get(i).get(0) +" "+ pathStack.get(i).get(2));
 				i=-1;
 			} 
 		}
-
 		Collections.reverse(shortestPathList);
 		return shortestPathList;
 	}
 
+	public void printTraversedPath(ArrayList<String> pathList, String algo, String pathAllPath){
+		String caption ="";
+		int i =0;
+		
+		if(algo.equals("DFS")){
+			caption = "DFS Traversal: ";
+		} else if(algo.equals("BFS")){
+			caption = "BFS Traversal: ";
+		}else if(algo.equals("DFS_short")){
+			caption = "ShortestPath by DFS traversal: ";
+		}else if(algo.equals("UCS")){
+			caption = "ShortestPath by UCS traversal: ";
+		}else if(algo.equals("A*")){
+			caption = "Path traversed by A* algorithm: ";
+		}
+		System.out.println(caption);
+		if(pathList!=null){
+			if (algo.equals("DFS") || algo.equals("BFS")){
+				for(String v : pathList){
+					System.out.println(v + " " + i);
+					i++;
+				}
+			} else if (algo.equals("UCS") || algo.equals("A*")){
+				for(String v : pathList){
+					System.out.println(v);
+					i++;
+				}
+			}
+		} else{
+			String[] path = new String[pathAllPath.length()-1];
+			path = pathAllPath.split(" ");
+			for(int j=0;j<pathAllPath.length(); j++){
+				System.out.println(path[i]);
+			}
+		}
+	}
+
 	public static void main(String[] args) throws IOException {
 		BufferedReader br = new BufferedReader(
-				new FileReader("/Users/shruti5488/Documents/JAVA/JavaPractice/String1/AISearch/src/testcases_DFS.txt"));
+				new FileReader("/Users/shruti5488/Documents/JAVA/JavaPractice/String1/AISearch/src/testcases_BFS.txt"));
 
 		String algo = br.readLine();
 		String start = br.readLine();
 		String end = br.readLine();
-		String node;
-		String path = "";
-
-		int num_live_traffic = Integer.parseInt(br.readLine());
+		String node, path = "";
+		HashMap<String, Integer> live_traffic = new HashMap<String, Integer>();
+		ArrayList<String> pathList = new ArrayList<String>();
+		String caption, pathAllPath;
+		
+		int numOfPath = Integer.parseInt(br.readLine());
 		String file_line;
 		int weight;
 		Graph graph = new Graph();
 		AISearch ai = new AISearch();
 
-		for (int i = 0; i < num_live_traffic; i++) {
+		for (int i = 0; i < numOfPath; i++) {
 			file_line = br.readLine().trim();
 			node = file_line.split(" ")[0];
 			path = file_line.split(" ")[1];
 			weight = Integer.parseInt(file_line.split(" ")[2]);
 			graph.addEdge(node, path, weight);
+		} 
+		
+		int num_live_traffic = Integer.parseInt(br.readLine().trim());
+
+		for(int j=0;j<num_live_traffic;j++){
+			file_line = br.readLine();
+			live_traffic.put(file_line.split(" ")[0], Integer.parseInt(file_line.split(" ")[1]));
 		}
 
 		if(algo.equals("DFS")){
-			System.out.println("DFS Traversal: " + ai.DFS(start, end, graph.getGraph()));
+			pathList = ai.DFS(start, end, graph.getGraph());
+			ai.printTraversedPath(pathList, algo, "");
 		} else if(algo.equals("BFS")){
-			System.out.println("BFS Traversal: " + ai.BFS(start, end, graph.getGraph()));
+			pathList = ai.BFS(start, end, graph.getGraph());
+			ai.printTraversedPath(pathList, algo, "");
 		}else if(algo.equals("DFS_short")){
-			System.out.println("ShortestPath by DFS traversal: " + ai.ShortestPath_DFS(start, end, graph.getGraph()));
-		} else if(algo.equals("UCS")){
-			System.out.println("ShortestPath by UCS traversal: " + ai.UCS(start, end, graph.getGraph()));
+			pathAllPath = ai.ShortestPath_DFS(start, end, graph.getGraph());
+			ai.printTraversedPath(null, algo, pathAllPath);
+		}else if(algo.equals("UCS")){
+			pathList = ai.UCS(start, end, graph.getGraph());
+			ai.printTraversedPath(pathList, algo, "");
+		}else if(algo.equals("A*")){
+			pathList =  ai.AStar(start, end, graph.getGraph(), live_traffic);
+			ai.printTraversedPath(pathList, algo, "");
 		}
 	}
-
 }
