@@ -18,33 +18,6 @@ import java.util.Stack;
 import java.util.TreeMap;
 
 public class AISearch {
-
-	private static HashMap<String, List<List<String>>> graph = new HashMap<String, List<List<String>>>();
-
-	public void setGraph(HashMap<String, List<List<String>>> graph) {
-		this.graph = graph;
-	}
-
-	public HashMap<String, List<List<String>>> getGraph() {
-		return graph;
-	}
-
-	public void addEdge(String node, String path, int weight) {
-		List<List<String>> list_path_bfs = new ArrayList<List<String>>();
-		if (getGraph().containsKey(node)) {
-			list_path_bfs.addAll(getGraph().get(node));
-			list_path_bfs.add(Arrays.asList(path, Integer.toString(weight)));
-			getGraph().put(node, list_path_bfs);
-			setGraph(getGraph());
-		} else {
-			list_path_bfs.add(Arrays.asList(path, Integer.toString(weight)));
-			getGraph().put(node, list_path_bfs);
-			setGraph(getGraph());
-			
-		}
-
-	}
-
 	public static String ShortestPath_DFS(String start, String end, HashMap<String, List<List<String>>> DFS_map) {
 		HashMap<String, Boolean> visited = new HashMap<String, Boolean>();
 		Deque<String> stack = new ArrayDeque<>();
@@ -169,16 +142,11 @@ public class AISearch {
 				}
 			}
 		}
-		shortestPathList.add(end);
-		String node = end;
-		String current = node;
-		while (node != start) {
-			node = pathStack.get(current);
-			current = node;
-			shortestPathList.add(node);
-		}
+
+		shortestPathList = getShortestPath(start, end,  pathStack);
 		return shortestPathList;
 	}
+	
 
 	public static ArrayList<String> BFS(String start, String end, HashMap<String, List<List<String>>> graph) {
 		ArrayList<String> shortestPathList = new ArrayList<String>();
@@ -220,22 +188,24 @@ public class AISearch {
 				}
 			}
 		}
+		shortestPathList = getShortestPath(start, end,  pathStack);
+		return shortestPathList;
+	}
 
+	public static ArrayList<String> getShortestPath(String start, String end, HashMap<String, String> pathStack){
+		ArrayList<String> shortestPathList = new ArrayList<String>();
+		String node = end;
 		String current = end;
-		String node;
 		shortestPathList.add(end);
-
-		node = current;
 		while (node != start) {
 			node = pathStack.get(current);
 			current = node;
 			shortestPathList.add(node);
 		}
+		Collections.reverse(shortestPathList);
 		return shortestPathList;
-
 	}
-
-
+	
 	public static void main(String[] args) throws IOException {
 		BufferedReader br = new BufferedReader(
 				new FileReader("/Users/shruti5488/Documents/JAVA/JavaPractice/String1/AISearch/src/testcases_DFS.txt"));
@@ -249,6 +219,7 @@ public class AISearch {
 		int num_live_traffic = Integer.parseInt(br.readLine());
 		String file_line;
 		int weight;
+		Graph graph = new Graph();
 		AISearch ai = new AISearch();
 
 		for (int i = 0; i < num_live_traffic; i++) {
@@ -256,20 +227,15 @@ public class AISearch {
 			node = file_line.split(" ")[0];
 			path = file_line.split(" ")[1];
 			weight = Integer.parseInt(file_line.split(" ")[2]);
-			ai.addEdge(node, path, weight);
+			graph.addEdge(node, path, weight);
 		}
 
 		if(algo.equals("DFS")){
-			ArrayList<String> DFSPath = ai.DFS(start, end, ai.getGraph());
-			Collections.reverse(DFSPath);
-			System.out.println("DFS Traversal: " + DFSPath);
+			System.out.println("DFS Traversal: " + ai.DFS(start, end, graph.getGraph()));
 		} else if(algo.equals("BFS")){
-			ArrayList<String> shortestPathList = ai.BFS(start, end, ai.getGraph());
-			Collections.reverse(shortestPathList);
-			System.out.println("BFS Traversal: " + shortestPathList);
+			System.out.println("BFS Traversal: " + ai.BFS(start, end, graph.getGraph()));
 		}else if(algo.equals("DFS_short")){
-			String shortPath_DFS = ai.ShortestPath_DFS(start, end, ai.getGraph());
-			System.out.println("ShortestPath by DFS traversal: " + shortPath_DFS);
+			System.out.println("ShortestPath by DFS traversal: " + ai.ShortestPath_DFS(start, end, graph.getGraph()));
 		} 
 	}
 
